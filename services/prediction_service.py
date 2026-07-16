@@ -32,15 +32,78 @@ CLASS_NAMES = [
 ]
 
 
+# def predict_image():
+
+#     if "image" not in request.files:
+
+#         return jsonify({
+
+#             "status":False,
+
+#             "message":"Image Required"
+
+#         })
+
+
+#     file = request.files["image"]
+
+#     extension = file.filename.split(".")[-1]
+
+#     filename = str(uuid.uuid4()) + "." + extension
+
+#     filepath = os.path.join(
+
+#         Config.UPLOAD_FOLDER,
+
+#         filename
+
+#     )
+
+#     file.save(filepath)
+
+#     img = preprocess_image(filepath)
+
+#     prediction = model.predict(img)
+
+#     index = np.argmax(prediction)
+
+#     confidence = float(np.max(prediction) * 100)
+
+#     result = CLASS_NAMES[index]
+
+#     email = get_jwt_identity()
+
+#     prediction_collection.insert_one({
+
+#         "email":email,
+
+#         "filename":filename,
+
+#         "prediction":result,
+
+#         "confidence":round(confidence,2)
+
+#     })
+
+#     return jsonify({
+
+#         "status":True,
+
+#         "prediction":result,
+
+#         "confidence":round(confidence,2)
+
+#     })
+
 def predict_image():
 
     if "image" not in request.files:
 
         return jsonify({
 
-            "status":False,
+            "status": False,
 
-            "message":"Image Required"
+            "message": "Image Required"
 
         })
 
@@ -51,6 +114,11 @@ def predict_image():
 
     filename = str(uuid.uuid4()) + "." + extension
 
+
+    # Create uploads folder if it doesn't exist
+    os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
+
+
     filepath = os.path.join(
 
         Config.UPLOAD_FOLDER,
@@ -59,7 +127,9 @@ def predict_image():
 
     )
 
+
     file.save(filepath)
+
 
     img = preprocess_image(filepath)
 
@@ -73,24 +143,32 @@ def predict_image():
 
     email = get_jwt_identity()
 
+
     prediction_collection.insert_one({
 
-        "email":email,
+        "email": email,
 
-        "filename":filename,
+        "filename": filename,
 
-        "prediction":result,
+        "prediction": result,
 
-        "confidence":round(confidence,2)
+        "confidence": round(confidence, 2)
 
     })
 
+
+    # Delete uploaded image after prediction
+    if os.path.exists(filepath):
+
+        os.remove(filepath)
+
+
     return jsonify({
 
-        "status":True,
+        "status": True,
 
-        "prediction":result,
+        "prediction": result,
 
-        "confidence":round(confidence,2)
+        "confidence": round(confidence, 2)
 
     })
